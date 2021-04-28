@@ -1,17 +1,28 @@
-{% extends 'base.html' %}
+<!doctype html>
+<html>
+    <head>
+      <title>TYN app</title>
 
-{% block title %}{{ title }}{% endblock %}
+      <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+      <link href="https://fonts.googleapis.com/css?family=Allan" rel="stylesheet">
+      <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+      <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.2/css/all.css">
+      <link rel="stylesheet" type="text/css" href="./style.css"/>
+    </head>
+    <body id="body">
+      <h1
+        id="app"
+        class="title">
+        TYN app
+      </h1>
 
-{% block body%}
-    <h1 id="app">{{text}}</h1>
-    
-<script>
-    var socket = new WebSocket('ws://127.0.0.1:8000/ws/some_url/');
-    socket.onmessage = function(event){
-        var data = JSON.parse(event.data);
-        console.log(data);
-        document.querySelector('#app').innerText = data.message;
-    }
-</script>
-{% endblock %}    
+      <div id="container">
+        <video autoplay="true" id="videoElement"></video>
+      </div>
+      <button onclick="sendMsg()">Send Msg</button>
+    <input type="text" id="find" name="plz" onchange="a_value(this);">
+</body>
 
+<script src="./index.js" type="text/javascript"></script>
+
+</html>
