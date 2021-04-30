@@ -10,14 +10,28 @@ const video = document.querySelector("#videoElement");
 if (navigator.mediaDevices.getUserMedia) {
 navigator.mediaDevices.getUserMedia({ video: true })
     .then(function (stream) {
-    video.srcObject = stream; // если все ок, то полученное видео передаем в тег видео для показа пользователю
+        console.log('strem: ', stream.getVideoTracks());
+        video.srcObject = stream; // если все ок, то полученное видео передаем в тег видео для показа пользователю
     })
     .catch(function (error) { // если не ок, то выводим в консоль ошибку
-    console.log("Something went wrong!", error.data);
+        console.log("Something went wrong!", error.data);
     });
 }
 
-const socket = new WebSocket('ws://localhost:5000');
+const getFrame = () => {
+    const canvas = document.createElement('canvas');
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    canvas.getContext('2d').drawImage(video, 0, 0);
+    const data = canvas.toDataURL('image/png');
+    return data;
+}
+
+const FPS = 3;
+
+const url = 'ws://localhost:5000';
+
+const socket = new WebSocket(url);
 
 // Connection opened
 socket.addEventListener('open', function (event) {
@@ -44,3 +58,10 @@ function a_value(data){
 socket.addEventListener('Message', (event) => {
     console.log(event.data);
 });
+
+socket.onopen = () => {
+    console.log(`Connected to ${url}`);
+    setInterval(() => {
+        socket.send(getFrame());
+    }, 1000 / FPS);
+}
