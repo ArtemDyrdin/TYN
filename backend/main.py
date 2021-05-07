@@ -3,8 +3,11 @@ import websockets
 import numpy as np
 import urllib.request as ur
 import cv2
+import random
 from PIL import Image
 from math import sin, cos, radians
+
+random.seed()
 
 connected = set()
 
@@ -31,12 +34,6 @@ settings_face = {
     'minNeighbors': 3, 
     'minSize': (50, 50), 
 }
-
-
-# print('stx', stx)
-# print('sty', sty)
-# print('stw', stw)
-# print('sth', sth)
 
 async def server(websocket, path):
   stx = 0
