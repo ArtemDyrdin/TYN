@@ -1,5 +1,9 @@
 /* здесь можешь писать свои стили, если потребуется. В идеале всегда использовать селектор по классу. */
 
 .title {
-  text-transform: uppercase;
+    text-transform: uppercase;
+}
+
+.mirrorY {
+    transform: scale(-1, 1);
 }
