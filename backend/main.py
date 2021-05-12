@@ -4,8 +4,7 @@ import numpy as np
 import urllib.request as ur
 import cv2
 import random
-from PIL import Image
-from math import sin, cos, radians
+from rotate import rotate_image, rotate_point
 
 random.seed()
 
@@ -25,36 +24,13 @@ with open('database\\intfacts.txt', 'r', encoding='utf-8') as file:
     data = file.read().split('\n')
     intfacts = [i for i in data]
 
-with open('database\\answers_stat.txt', 'r', encoding='utf-8') as file:
-    data = file.read().split('\n')
-    answers_stat = [int(data[i]) for i in range(0, len(data) - 1)]
+with open('database\\answers_stat.txt', 'r') as file:
+    data = file.read()
+    answer_stat = eval(data)
 
 with open('database\\spec_tasks.txt', 'r', encoding='utf-8') as file:
     data = file.read().split('\n')
     spec_tasks = [i for i in data]
-
-with open('database\\answers_stat.txt', 'w', encoding='utf-8') as file:
-    file.write('')
-
-
-def rotate_image(image, angle):
-    if angle == 0:
-        return image
-    height, width = image.shape[:2]
-    rot_mat = cv2.getRotationMatrix2D((width/2, height/2), angle, 0.9)
-    result = cv2.warpAffine(
-        image, rot_mat, (width, height), flags=cv2.INTER_LINEAR)
-    return result
-
-
-def rotate_point(pos, img, angle):
-    if angle == 0:
-        return pos
-    x = pos[0] - img.shape[1]*0.4
-    y = pos[1] - img.shape[0]*0.4
-    newx = x*cos(radians(angle)) + y*sin(radians(angle)) + img.shape[1]*0.4
-    newy = -x*sin(radians(angle)) + y*cos(radians(angle)) + img.shape[0]*0.4
-    return int(newx), int(newy), pos[2], pos[3]
 
 
 face = cv2.CascadeClassifier(
@@ -66,11 +42,22 @@ settings_face = {
 }
 
 
+def procent(index, side):
+    procentp = int(
+        answer_stat[index*2]/(answer_stat[index*2]+answer_stat[index*2+1])*100)
+    if side == 'left':
+        return procentp
+    elif side == 'right':
+        return 100 - procentp
+
+
 async def server(websocket, path):
     stx = 0
     sty = 0
     stw = 0
     sth = 0
+    # index of questions, variants and stats
+    index = None
     # Register.
     connected.add(websocket)
     print('websocket opened \n')
@@ -80,10 +67,12 @@ async def server(websocket, path):
             try:
                 if message == 'start':
                     a = random.randint(0, len(questions)-1)
+                    index = a
                     for conn in connected:
                         if conn == websocket:
                             # sending a questions and variants
-                            await conn.send(f'Q{questions[a] + answers_var[a*2+1] + answers_var[a*2]}')
+                            await conn.send(f'Q{questions[a]}')
+                            await conn.send(f'V{answers_var[a*2+1]}  {answers_var[a*2]}')
                 else:
                     url_response = ur.urlopen(message)
                     # convert it into a numpy array
@@ -91,7 +80,6 @@ async def server(websocket, path):
                         bytearray(url_response.read()), dtype=np.uint8)
                     # decode the image (готово для использования в библиотеке cv2)
                     image = cv2.imdecode(img_array, -1)  # это готовый кадр
-                    # print(type(image))
                     ret_flip = image
                     img_flip = image
                     ret = cv2.flip(ret_flip, 1)
@@ -118,19 +106,39 @@ async def server(websocket, path):
 
                     for conn in connected:
                         if conn == websocket:
-                            if x < stx-35 and y > sty+20:
-                                print("left")
-                                await conn.send('ALeft')
-                            elif x + w > stx + w + 35 and y > sty + 20:
-                                print("right")
-                                await conn.send('ARight')
+                            try:
+                                if (x < stx-35 and y > sty+20) or (x + w > stx + w + 35 and y > sty + 20):
+                                    b = random.randint(0, len(intfacts)-1)
+                                    if x < stx-35 and y > sty+20:
+                                        print("left")
+                                        answer_stat[index*2] += 1
+
+                                        print(f"{procent(index, 'left')} %")
+                                        await conn.send('ALeft')
+                                        await conn.send(f"P{procent(index, 'left')} %")
+                                        await conn.send(f'F{intfacts[b]}')
+
+                                    elif x + w > stx + w + 35 and y > sty + 20:
+                                        print("right")
+                                        answer_stat[index*2+1] += 1
+
+                                        print(f"{procent(index, 'right')} %")
+                                        await conn.send('ARight')
+                                        await conn.send(f"P{procent(index, 'right')} %")
+                                        await conn.send(f'F{intfacts[b]}')
+
+                                    with open('database\\answers_stat.txt', 'w') as file:
+                                        file.write(f'{answer_stat}')
+                                        print(answer_stat)
+
+                            except Exception as expt:
+                                print(f'Exception of writing to file: {expt}')
 
             except Exception as expt:
                 print(expt)
-                if expt == "local variable 'x' referenced before assignment":
-                    for conn in connected:
-                        if conn == websocket:
-                            await conn.send('EЛицо не обнаружено')
+                for conn in connected:
+                    if conn == websocket:
+                        await conn.send('EЛицо не обнаружено')
 
     except Exception as expt:
         print(f'ERROR!!!! \n{expt}\n')
