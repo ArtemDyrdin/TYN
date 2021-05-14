@@ -5,6 +5,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <link href="https://fonts.googleapis.com/css?family=Allan" rel="stylesheet">
+    <link rel="shortcut icon" href="images/QFiaBBaTZPQ-removebg-preview.png" type="image/x-icon">
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.2/css/all.css">
     <link rel="stylesheet" type="text/css" href="./style.css"/>
@@ -12,33 +13,71 @@
     
   </head>
   <body id="body">
-    <h1
-      id="app"
-      class="title">
-      TYN app
-    </h1>
-    <h3 id="question_fact"></h3>
-    <h3 id="variants_procent"></h3>
-
-    <div id="container">
-      <video
-        autoplay="true"
-        id="videoElement"
-        poster="https://css-tricks.com/wp-content/uploads/2018/09/lazy-load-image.png"
-        width="640px"
-        height="480px"
-        class="mirrorY"
-      ></video>
+    <header>
+      <h3>
+        <a href="#main">Главная</a>
+        <a href="#why">Зачем?</a>
+        <a href="#who_are_we">Кто мы?</a>
+        <a href="#container">Начть игру</a>
+        <a href="#footer">Контакты</a>
+        <a href="">Скачать</a>
+      </h3>
+    </header>
+    <div class="first">
+      <div class="oneln">
+        <div class="tyn_proj">
+          <h1 class="tyn">TYN</h1>
+          <h3 class="project">PROJECT</h3>
+        </div>
+        <div class="we_train" id="main">
+          <h1 class="train">МЫ ТРЕНИРУЕМ</h1>
+          <h1 class="brain">МОЗГ</h1>
+        </div>
+      </div>
+      <div class="neckdiv">
+        <h1 class="train2">И РАЗМИНАЕМ</h1>
+        <h1 class="neck">ШЕЮ</h1>
+      </div>
     </div>
-    <div
-      id="controls"
-      style="display: none;"
-    >
-      <!-- <button onclick="startWorkout()">Start Workout</button> -->
-      <button onclick="endWorkout()">End Workout</button>
+    <div class="second" id="why">
+      <h1>Зачем?</h1>
+    </div>
+    <div class="thrird" id="who_are_we">
+      <h1>Кто мы?</h1>
+    </div>
+    <div class="app" id="start_game">
+      <h1
+        id="app"
+        class="title">
+        TYN app
+      </h1>
+      <h3 id="question_fact"></h3>
+      <h3 id="variants_procent"></h3>
+
+      <div id="container">
+        <video
+          autoplay="true"
+          id="videoElement"
+          poster="https://css-tricks.com/wp-content/uploads/2018/09/lazy-load-image.png"
+          width="640px"
+          height="480px"
+          class="mirrorY"
+        ></video>
+      </div>
+      <div
+        id="controls"
+        style="display: none;"
+      >
+        <!-- <button onclick="startWorkout()">Start Workout</button> -->
+        <button onclick="endWorkout()">End Workout</button>
+      </div>
     </div>
   </body>
-
+  <footer id="footer">
+    <div class="contacts">
+      <h1>Contacts</h1>
+    </div>
+  </footer>
   <script src="./script/helpers/webcam.js" type="text/javascript"></script>
   <script src="./script/helpers/websocket.js" type="text/javascript"></script>
   <script src="./script/index.js" type="text/javascript"></script>

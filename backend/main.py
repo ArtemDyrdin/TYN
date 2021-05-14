@@ -73,6 +73,13 @@ async def server(websocket, path):
                             # sending a questions and variants
                             await conn.send(f'Q{questions[a]}')
                             await conn.send(f'V{answers_var[a*2+1]}  {answers_var[a*2]}')
+                # elif message == 'rewrite':
+                #     stx = x
+                #     sty = y
+                #     stw = w
+                #     sth = h
+                #     print("New coordinates", "stx =", stx, "sty =", sty,
+                #           "stw =", stw, "sth =", sth)
                 else:
                     url_response = ur.urlopen(message)
                     # convert it into a numpy array

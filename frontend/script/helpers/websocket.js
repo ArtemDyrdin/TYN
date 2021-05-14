@@ -2,15 +2,16 @@ const url = 'ws://localhost:5000';
 
 const socket = new WebSocket(url);
 
-question = ""; // для хранения вопроса и вариантов ответа
-variants = "";
-answer = ""; // для хранения ответа от сервера ('left' или 'right')
-start = "start"; // для отправки на сервер, чтобы сервер выкинул вопрос и варианты ответа
-stat = false; // для работы после воспроизведения видео
-procent = ""; // для хранения значения процента
-fact = ""; // для хранения интересного факта
+let question = ""; // для хранения вопроса и вариантов ответа
+let variants = "";
+let answer = ""; // для хранения ответа от сервера ('left' или 'right')
+let start = "start"; // для отправки на сервер, чтобы сервер выкинул вопрос и варианты ответа
+let stat = false; // для работы после воспроизведения видео
+let procent = ""; // для хранения значения процента
+let fact = ""; // для хранения интересного факта
 // для определения прихода процента и факта
-ch1 = 0;
+let ch1 = 0;
+let diside = 0;
 
 const runWebSocket = () => {
   // Connection opened
@@ -22,7 +23,6 @@ const runWebSocket = () => {
   socket.addEventListener('close', function (event) {
     console.log('Socket is closed!');
   });
-  
   // Listen for messages
   socket.addEventListener('message', function (event) {
     // проверка на вопроc
@@ -30,8 +30,6 @@ const runWebSocket = () => {
       question = event.data.slice(1);
       if (stat === true){
         console.log(question);
-        $("#question_fact").text(question);
-        setTimeout(() => {console.log("TimeOut");}, 2000);
       }
     }
     // проверка на варианты ответов
@@ -39,34 +37,35 @@ const runWebSocket = () => {
       variants = event.data.slice(1).split("  ");
       if (stat === true){
         console.log(variants);
+        $("#question_fact").text(question);
         $("#variants_procent").text(`${variants[0]}  ${variants[1]}`);
-        clearTimeout(intervalId);
-        setTimeout(() => {
-          intervalId = setInterval(() => {
-            socket.send(getFrame());
-          }, 1000 / FPS);
-        }, 2000);
+        clearInterval(intervalId);
+        setTimeout(() => {intervaltime();}, 2000);
       }
     }
     // проверка на ответ от сервера ('left' или 'right')
     else if(event.data[0] === "A"){
       answer = event.data;
       console.log(answer);
-      socket.send(start);
     }
-    // проверка на процент
+  // проверка на процент
     else if(event.data[0] === "P"){
       ch1 = 1;
-      console.log('ch1 = 1')
+      console.log('ch1 = 1');
       procent = event.data.slice(1);
     }
     // // проверка на факт
     else if(ch1 === 1 && event.data[0] === "F"){
       $("#question_fact").text(event.data.slice(1));
-      $("#variants_procent").text(procent);
-      endWorkout();                                       // НЕ ОСТАНАВЛИВАЕТСЯ
-    }
-    // проверка на ошибку при обнаружении лица
+      $("#variants_procent").text(`${procent} людей ответило также`);
+      clearInterval(intervalId);
+      document.addEventListener('keydown', function(keyevent) {
+        console.log("Button was pressed");
+        intervaltime();
+        socket.send(start);
+      }, true);
+      }
+      // проверка на ошибку при обнаружении лица
     else if(event.data[0] === 'E'){
       console.log(event.data);
     }
@@ -83,15 +82,19 @@ const runWebSocket = () => {
   }
 };
 
-const startWorkout = () => {
-  console.log('start workout clicked!');
-  console.log(start)
-  socket.send(start); // отправка start для вывода первого вопроса
-  $("#question_fact").text("Чтобы начать разрешите съемку и наклоните голову в лево или право");
+const intervaltime = () => {
   intervalId = setInterval(() => {
     if (stat === false){
       stat = true;
     }
     socket.send(getFrame());
   }, 1000 / FPS);
+};
+
+const startWorkout = () => {
+  console.log('start workout clicked!');
+  console.log(start)
+  socket.send(start); // отправка start для вывода первого вопроса
+  $("#question_fact").text("Чтобы начать разрешите съемку и наклоните голову в лево или право");
+  intervaltime();
 };

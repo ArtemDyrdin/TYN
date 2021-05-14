@@ -2,7 +2,7 @@
 const video = document.querySelector("#videoElement");
 const controls = document.querySelector("#controls");
 let intervalId;
-const FPS = 2;
+const FPS = 2.5;
 
 // поучить кадр
 const getFrame = () => {
