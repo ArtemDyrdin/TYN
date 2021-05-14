@@ -6,7 +6,7 @@ let question = ""; // для хранения вопроса и варианто
 let variants = "";
 let answer = ""; // для хранения ответа от сервера ('left' или 'right')
 let start = "start"; // для отправки на сервер, чтобы сервер выкинул вопрос и варианты ответа
-let stat = false; // для работы после воспроизведения видео
+let stat = true; // для работы после воспроизведения видео
 let procent = ""; // для хранения значения процента
 let fact = ""; // для хранения интересного факта
 // для определения прихода процента и факта
@@ -37,8 +37,9 @@ const runWebSocket = () => {
       variants = event.data.slice(1).split("  ");
       if (stat === true){
         console.log(variants);
-        $("#question_fact").text(question);
-        $("#variants_procent").text(`${variants[0]}  ${variants[1]}`);
+        $("#question").text(question);
+        $("#answer-left").text(`${variants[0]}`);
+        $("#answer-right").text(`${variants[1]}`);
         clearInterval(intervalId);
         setTimeout(() => {intervaltime();}, 2000);
       }
@@ -47,6 +48,7 @@ const runWebSocket = () => {
     else if(event.data[0] === "A"){
       answer = event.data;
       console.log(answer);
+      socket.send(start)
     }
   // проверка на процент
     else if(event.data[0] === "P"){
@@ -54,17 +56,19 @@ const runWebSocket = () => {
       console.log('ch1 = 1');
       procent = event.data.slice(1);
     }
-    // // проверка на факт
+    // проверка на факт
     else if(ch1 === 1 && event.data[0] === "F"){
-      $("#question_fact").text(event.data.slice(1));
-      $("#variants_procent").text(`${procent} людей ответило также`);
-      clearInterval(intervalId);
-      document.addEventListener('keydown', function(keyevent) {
-        console.log("Button was pressed");
-        intervaltime();
-        socket.send(start);
-      }, true);
+      $("#fact").text(`Интересный факт: ${event.data.slice(1)}`);
+      $("#procent").text(`${procent} людей ответило также`);
       }
+    else if(event.data === 'Break'){
+      endWorkout();
+      $("#question").text("Спасибо, вы ответили на все заданные вам вопросы");
+      $("#fact").text("");
+      $("#procent").text("");
+      $("#answer-left").text("");
+      $("#answer-right").text("");
+    }
       // проверка на ошибку при обнаружении лица
     else if(event.data[0] === 'E'){
       console.log(event.data);
@@ -95,6 +99,5 @@ const startWorkout = () => {
   console.log('start workout clicked!');
   console.log(start)
   socket.send(start); // отправка start для вывода первого вопроса
-  $("#question_fact").text("Чтобы начать разрешите съемку и наклоните голову в лево или право");
   intervaltime();
 };

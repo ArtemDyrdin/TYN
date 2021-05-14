@@ -56,6 +56,8 @@ async def server(websocket, path):
     sty = 0
     stw = 0
     sth = 0
+    temp = 0
+    temp2 = 0
     # index of questions, variants and stats
     index = None
     # Register.
@@ -67,19 +69,21 @@ async def server(websocket, path):
             try:
                 if message == 'start':
                     a = random.randint(0, len(questions)-1)
+                    while questions[a] == '#':
+                        a += 1
+                        if a == len(questions):
+                            a = 0
+                            temp += 1
+                        if temp >= len(questions):
+                            for conn in connected:
+                                if conn == websocket:
+                                    await conn.send(f'Break')
                     index = a
                     for conn in connected:
                         if conn == websocket:
                             # sending a questions and variants
                             await conn.send(f'Q{questions[a]}')
                             await conn.send(f'V{answers_var[a*2+1]}  {answers_var[a*2]}')
-                # elif message == 'rewrite':
-                #     stx = x
-                #     sty = y
-                #     stw = w
-                #     sth = h
-                #     print("New coordinates", "stx =", stx, "sty =", sty,
-                #           "stw =", stw, "sth =", sth)
                 else:
                     url_response = ur.urlopen(message)
                     # convert it into a numpy array
@@ -116,10 +120,16 @@ async def server(websocket, path):
                             try:
                                 if (x < stx-35 and y > sty+20) or (x + w > stx + w + 35 and y > sty + 20):
                                     b = random.randint(0, len(intfacts)-1)
+                                    while intfacts[b] == '#':
+                                        b += 1
+                                        if b == len(spec_tasks):
+                                            b = 0
+                                            temp2 += 1
                                     if x < stx-35 and y > sty+20:
                                         print("left")
                                         answer_stat[index*2] += 1
-
+                                        questions[a] = "#"
+                                        intfacts[b] == '#'
                                         print(f"{procent(index, 'left')} %")
                                         await conn.send('ALeft')
                                         await conn.send(f"P{procent(index, 'left')} %")
@@ -128,7 +138,8 @@ async def server(websocket, path):
                                     elif x + w > stx + w + 35 and y > sty + 20:
                                         print("right")
                                         answer_stat[index*2+1] += 1
-
+                                        questions[a] = "#"
+                                        intfacts[b] == '#'
                                         print(f"{procent(index, 'right')} %")
                                         await conn.send('ARight')
                                         await conn.send(f"P{procent(index, 'right')} %")
