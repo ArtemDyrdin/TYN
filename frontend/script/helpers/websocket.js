@@ -40,12 +40,9 @@ const runWebSocket = () => {
         $("#question").text(question);
         $("#answer-left").text(`${variants[0]}`);
         $("#answer-right").text(`${variants[1]}`);
-        clearInterval(intervalId);
-        setTimeout(() => {intervaltime();}, 2000);
-        // const lst = new Date;
-        // if (new Date - lst > 2){
-        //   intervaltime();
-        // }
+        // clearInterval(intervalId);
+        // setTimeout(() => {intervaltime();}, 2000);
+        // socket.send("2000")
       }
     }
     // проверка на ответ от сервера ('left' или 'right')

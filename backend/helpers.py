@@ -9,7 +9,6 @@ def load_lines(path, encoding='utf-8'):
         return [line for line in f.read().splitlines()]
     
 def procent(index, side, answer_stat):
-    # safe guard against division by zero and out-of-range index
     try:
         left = int(answer_stat[index * 2])
         right = int(answer_stat[index * 2 + 1])

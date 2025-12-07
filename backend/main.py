@@ -31,7 +31,6 @@ else:
 
 spec_tasks = load_lines(os.path.join(BASE, 'spec_tasks.txt'))
 
-# face detector
 face = cv2.CascadeClassifier(
     cv2.data.haarcascades + "haarcascade_frontalface_alt2.xml")
 settings_face = {
@@ -41,14 +40,12 @@ settings_face = {
 }
 
 async def server(websocket):
-    # Use None for uninitialized anchor
     stx = sty = stw = sth = None
     temp = 0
     temp2 = 0
     index = None
     a = None
 
-    # Register.
     connected.add(websocket)
     print('websocket opened \n')
     try:
@@ -56,12 +53,11 @@ async def server(websocket):
             try:
                 if message == 'start':
                     if not questions:
-                        await websocket.send('EНет вопросов')
+                        await websocket.send('Нет вопросов')
                         continue
 
                     a = random.randint(0, len(questions) - 1)
 
-                    # Find next non-# question (protect infinite loop)
                     tries = 0
                     while questions[a] == '#':
                         a += 1
@@ -78,16 +74,13 @@ async def server(websocket):
                         continue
 
                     index = a
-                    # Send question and variants (guard indexes)
                     q_text = questions[a] if a < len(questions) else ''
-                    # answers_var expected to store two lines per question?? original used a*2+1 and a*2
                     var_right = answers_var[a * 2 + 1] if a * 2 + 1 < len(answers_var) else ''
                     var_left = answers_var[a * 2] if a * 2 < len(answers_var) else ''
                     await websocket.send(f'Q{q_text}')
                     await websocket.send(f'V{var_right}  {var_left}')
 
                 else:
-                    # treat message as image URL
                     try:
                         url_response = ur.urlopen(message)
                     except Exception as e:
@@ -98,10 +91,9 @@ async def server(websocket):
                     img_array = np.array(bytearray(url_response.read()), dtype=np.uint8)
                     image = cv2.imdecode(img_array, -1)
                     if image is None:
-                        await websocket.send('EНевалидное изображение')
+                        await websocket.send('Невалидное изображение')
                         continue
 
-                    # flip horizontally (mirror)
                     img = cv2.flip(image, 1)
 
                     detected = []
@@ -110,27 +102,21 @@ async def server(websocket):
                         rimg = rotate_image(img, angle)
                         det = face.detectMultiScale(rimg, **settings_face)
                         if len(det):
-                            # take the last detected (like in original)
                             detected = [rotate_point(det[-1], img, -angle)]
                             break
 
                     if not detected:
-                        # no face detected
-                        await websocket.send('EЛицо не обнаружено')
+                        await websocket.send('Лицо не обнаружено')
                         continue
 
                     # get x,y,w,h from detection
                     x, y, w, h = detected[-1]
 
-                    # crop face area if needed (not used currently)
-                    # img_facepro = rimg[y:y + h, x:x + w]
-
-                    # initialize anchor if not set
                     if stx is None and x is not None:
                         stx, sty, stw, sth = x, y, w, h
                         print("anchor set: stx =", stx, "sty =", sty, "stw =", stw, "sth =", sth)
 
-                    # now check for left/right nod (with bounds checking)
+                    # now check for left/right
                     try:
                         # choose a fact index b
                         if (x < stx - 35 and y > sty + 20) or (x + w > stx + stw + 35 and y > sty + 20):
@@ -164,7 +150,7 @@ async def server(websocket):
                                 if b is not None:
                                     await websocket.send(f'F{intfacts[b]}')
                                 else:
-                                    await websocket.send('FНет фактов')
+                                    await websocket.send('Нет фактов')
 
                             # RIGHT
                             elif x + w > stx + stw + 35 and y > sty + 20:
@@ -181,9 +167,8 @@ async def server(websocket):
                                 if b is not None:
                                     await websocket.send(f'F{intfacts[b]}')
                                 else:
-                                    await websocket.send('FНет фактов')
+                                    await websocket.send('Нет фактов')
 
-                            # persist stats to file
                             try:
                                 with open(ans_stat_path, 'w', encoding='utf-8') as file:
                                     file.write(f'{answer_stat}')
@@ -192,12 +177,10 @@ async def server(websocket):
                                 print('Exception writing answer_stat:', e)
 
                     except Exception as expt:
-                        # handle any processing exceptions per-frame
                         print('Frame processing exception:', expt)
                         await websocket.send('EОшибка обработки кадра')
 
             except Exception as expt:
-                # this captures per-message exceptions
                 print('Message handling exception:', expt)
                 try:
                     await websocket.send('EОшибка сервера при обработке сообщения')
@@ -209,19 +192,15 @@ async def server(websocket):
     except Exception as expt:
         print(f'ERROR in connection handler: {expt}')
     finally:
-        # Ensure socket is removed from connected
         if websocket in connected:
             connected.remove(websocket)
         print('websocket closed \n')
 
 
 async def main():
-    # bind server
     async with websockets.serve(server, "localhost", 5000):
-        print('websocket serve running on ws://localhost:5000')
-        # keep server alive forever
-        await asyncio.Future()  # run forever
-
+        print('Server is running')
+        await asyncio.Future()
 
 if __name__ == '__main__':
     try:
