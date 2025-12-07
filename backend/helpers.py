@@ -1,5 +1,25 @@
 from math import sin, cos, radians
+import os
 import cv2
+
+def load_lines(path, encoding='utf-8'):
+    if not os.path.exists(path):
+        return []
+    with open(path, 'r', encoding=encoding) as f:
+        return [line for line in f.read().splitlines()]
+    
+def procent(index, side, answer_stat):
+    # safe guard against division by zero and out-of-range index
+    try:
+        left = int(answer_stat[index * 2])
+        right = int(answer_stat[index * 2 + 1])
+        total = left + right
+        if total == 0:
+            return 50
+        procentp = int(left / total * 100)
+        return procentp if side == 'left' else 100 - procentp
+    except Exception:
+        return 50
 
 def rotate_image(image, angle):
     if angle == 0:
